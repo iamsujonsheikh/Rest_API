@@ -1,5 +1,6 @@
 import asyncHandler from "express-async-handler";
 import User from "../models/user.model.js";
+import bcrypt from "bcrypt";
 
 
 // get all user
@@ -25,12 +26,36 @@ export const getSingleUser = asyncHandler(async (req, res) => {
 
 // create a user
 export const createUser = asyncHandler(async (req, res) => {
+    // get values
     const { name, email, mobile, password, gender } = req.body;
 
+    // validation
     if (!name || !email || !mobile || !password || !gender) {
         return res.status(400).json({ message: "All fields are required." })
-    }
-    const user = await User.create({ name, email, mobile, password, gender });
+    };
+
+    // email check
+    const emailExist = await User.findOne({ email });
+
+    if (emailExist) {
+        return res.status(400).send("This email already exist.")
+    };
+
+    // hash password
+    const hashPassword = await bcrypt.hash(password, 10);
+
+    // create new user
+    const user = await User.create(
+        {
+            name,
+            email,
+            mobile,
+            password: hashPassword,
+            gender
+        }
+    );
+
+    // send response
     res.status(201).json(user);
 });
 
@@ -48,7 +73,7 @@ export const deleteAUser = asyncHandler(async (req, res) => {
 
 
 
-// delete a user
+// update a user
 export const updateAUser = asyncHandler(async (req, res) => {
     const id = req.params.id;
     const { name, email, mobile, password, gender } = req.body;

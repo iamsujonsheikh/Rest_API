@@ -4,6 +4,7 @@ import dotenv from "dotenv"
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import userRouter from "./route/user.route.js";
+import authRouter from "./route/auth.route.js";
 import { errorHandler } from "./middlewares/errorHandler.js";
 import { connectDB } from "./config/db.js";
 dotenv.config();
@@ -23,6 +24,7 @@ const PORT = process.env.port || 9090;
 
 // routing
 app.use("/api/v1/user", userRouter);
+app.use("/api/v1/auth", authRouter);
 
 
 // use error handler.
