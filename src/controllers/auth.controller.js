@@ -1,25 +1,26 @@
-import asyncHandler from "express-async-handler";
 import User from "../models/user.model.js";
+import asyncHandler from "express-async-handler";
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
+import Jwt from "jsonwebtoken";
 
 
 // login user
 export const login = asyncHandler(async (req, res) => {
 
-    // get values
+    // get value
     const { email, password } = req.body;
 
-    // validation
-    if (!email || !password) {
-        return res.status(400).json({ message: "All fields are required." })
-    };
+    // validate
+    if (!(email || password)) {
+        return res.status(400).send("All fields are required.")
+    }
 
-    // login user
+    // check login email user
     const loginUser = await User.findOne({ email });
     if (!loginUser) {
-        return res.status(404).json({ message: "User not found." })
+        return res.status(400).json({ message: "User email not valid." })
     };
+
 
     // check password
     const loginPassword = await bcrypt.compare(password, loginUser.password);
@@ -28,14 +29,16 @@ export const login = asyncHandler(async (req, res) => {
         return res.status(401).json({ message: "Password is wrong." })
     };
 
-    // create access token
-    const token = jwt.sign({ email: loginUser.email }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: process.env.ACCESS_TOKEN_EXPIRE_IN });
 
-    // token set into cookie
+    // create access token
+    const token = Jwt.sign({ email: loginUser.email }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: process.env.ACCESS_TOKEN_EXPIRE_IN });
+
+    // token set into cokkie
     res.cookie("accessToken", token);
 
-    // response login user token
-    res.status(200).json({ token });
+
+    // send to the response
+    res.status(200).json({ token })
 
 });
 
